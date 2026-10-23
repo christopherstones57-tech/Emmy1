@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>C64 Emmy TAP Player v20 - Manual Startup Test</title>
+<style>
+:root{color-scheme:dark;--bg:#10131a;--panel:#1b2230;--accent:#4de0c1;--text:#f4f7fb;--muted:#aab5c5}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:15px system-ui,-apple-system,sans-serif;padding:12px 10px 20px}
+header{text-align:center;margin:2px 0 12px}
+h1{font-size:23px;margin:0;color:var(--accent)}
+.sub{font-size:12px;color:var(--muted);margin-top:3px}
+.panel{background:var(--panel);border:1px solid #30394a;border-radius:14px;padding:12px;margin:10px auto;max-width:850px}
+button,.pick{font:inherit;font-weight:650;color:var(--text);background:#303c50;border:1px solid #465570;border-radius:9px;padding:10px 12px;min-height:42px;cursor:pointer;text-align:center}
+button:active{background:#526780;transform:scale(.98)}
+button:disabled{opacity:.5}
+.primary{background:#087f72;border-color:#20bda6}
+#file{display:none}
+#filename{display:block;color:var(--muted);font-size:13px;overflow-wrap:anywhere;margin-top:8px}
+#status{font-weight:650;color:#ffcf70;min-height:22px;margin-top:9px;overflow-wrap:anywhere}
+#game{width:100%;min-height:270px;aspect-ratio:4/3;background:#000;border-radius:10px;overflow:hidden}
+#game canvas{max-width:100%!important}
+.controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin-top:10px}
+.controls button{padding:8px 4px;min-height:43px}
+.keyboard{display:grid;gap:5px;margin-top:9px}
+.keyrow{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:4px}
+.keyrow button{padding:7px 0;min-height:38px;font-size:13px;touch-action:manipulation}
+.keyrow .wide{grid-column:span 2}
+.keyrow .space{grid-column:span 4}
+.small{font-size:12px;color:var(--muted);line-height:1.4}
+.ejs_virtualGamepad,.ejs_virtual_gamepad,.virtual-gamepad,.virtualGamepad,#virtualGamepad,#virtual-gamepad,.gamepad-overlay,.gamepad-zone,[class*="virtualGamepad"],[class*="virtual-gamepad"],[id*="virtualGamepad"]{display:none!important;visibility:hidden!important;pointer-events:none!important}
+#keys{display:none}
+#keys.visible{display:block}
+footer{max-width:850px;margin:10px auto;text-align:center}
+</style>
+</head>
+<body>
+<header><h1>C64 Emmy TAP Player</h1><div class="sub">Version 20 · Manual startup test</div></header>
+<section class="panel">
+  <label class="pick primary" for="file">Choose a .TAP game from Files</label>
+  <input id="file" type="file" accept=".tap,.TAP,application/octet-stream">
+  <span id="filename">No TAP selected yet</span>
+  <div class="controls">
+    <button id="start" class="primary" disabled>Load / Start</button>
+    <button id="reset" disabled>Reset page</button>
+    <button id="showkeys">Show keyboard</button>
+    <button id="copydiag">Copy diagnostics</button>
+  </div>
+  <div id="status">Choose a TAP file to begin.</div>
+  <div id="recovery" class="small" style="display:none;color:#ffcf70;margin-top:8px;overflow-wrap:anywhere"></div>
+  <div id="diag" class="small" style="margin-top:7px;color:#7fe8d2">Screen monitor: waiting for emulator start.</div>
+  <p class="small">Touchscreen joystick and game buttons are hidden. Bluetooth controllers may work if paired in iPhone Settings → Bluetooth.</p>
+  <p class="small">The first load can take a little while. Wait for the status message before tapping Load / Start again.</p>
+</section>
+<section class="panel"><div id="game"></div></section>
+<section class="panel" id="keys">
+  <strong>Touch keyboard</strong>
+  <div class="small">Tap a key once to send a press and release to the emulator.</div>
+  <div class="keyboard">
+    <div class="keyrow">
+      <button data-key="Escape">RUN/STOP</button><button data-key="1">1</button><button data-key="2">2</button><button data-key="3">3</button><button data-key="4">4</button><button data-key="5">5</button><button data-key="6">6</button><button data-key="7">7</button><button data-key="8">8</button><button data-key="9">9</button>
+    </div>
+    <div class="keyrow">
+      <button data-key="q">Q</button><button data-key="w">W</button><button data-key="e">E</button><button data-key="r">R</button><button data-key="t">T</button><button data-key="y">Y</button><button data-key="u">U</button><button data-key="i">I</button><button data-key="o">O</button><button data-key="p">P</button>
+    </div>
+    <div class="keyrow">
+      <button data-key="a">A</button><button data-key="s">S</button><button data-key="d">D</button><button data-key="f">F</button><button data-key="g">G</button><button data-key="h">H</button><button data-key="j">J</button><button data-key="k">K</button><button data-key="l">L</button><button data-key="Enter">RETURN</button>
+    </div>
+    <div class="keyrow">
+      <button data-key="Shift" class="wide">SHIFT</button><button data-key="z">Z</button><button data-key="x">X</button><button data-key="c">C</button><button data-key="v">V</button><button data-key="b">B</button><button data-key="n">N</button><button data-key="m">M</button><button data-key="Backspace">DEL</button>
+    </div>
+    <div class="keyrow">
+      <button data-key="ArrowLeft">←</button><button data-key="ArrowUp">↑</button><button data-key="ArrowDown">↓</button><button data-key="ArrowRight">→</button><button data-key="Control">CTRL</button><button data-key="Tab">COMMODORE</button><button data-key=" " class="space">SPACE</button><button data-key="F1">F1</button><button data-key="F3">F3</button>
+    </div>
+    <div class="keyrow">
+      <button data-key="+">+</button><button data-key="-">-</button><button data-key="*">*</button><button data-key="/">/</button><button data-key=":">:</button><button data-key=";">;</button><button data-key=",">,</button><button data-key=".">.</button><button data-key="@">@</button><button data-key="=">=</button>
+    </div>
+  </div>
+</section>
+<footer class="small">V20 test: automatic startup disabled to help isolate the black-screen startup failure. This is a diagnostic test, not a confirmed fix.</footer>
+<script>
+(function(){
+  const fileInput=document.getElementById('file');
+  const filename=document.getElementById('filename');
+  const status=document.getElementById('status');
+  const diag=document.getElementById('diag');
+  const gameBox=document.getElementById('game');
+  const start=document.getElementById('start');
+  const reset=document.getElementById('reset');
+  const showkeys=document.getElementById('showkeys');
+  const keys=document.getElementById('keys');
+  let selectedFile=null, selectedObjectUrl=null, started=false, loaderAdded=false, soundCtx=null, startupTimer=null, monitorTimer=null;
+  let startupStage='Page ready; waiting for TAP selection';
+  let lastCanvasState='not checked', canvasEvents=0;
+  const diagnosticLog=[];
+  function logEvent(kind,detail){
+    const entry={time:new Date().toLocaleTimeString(),kind:String(kind||'event'),detail:String(detail||'').slice(0,1200),stage:startupStage};
+    diagnosticLog.push(entry);if(diagnosticLog.length>35)diagnosticLog.shift();
+    try{sessionStorage.setItem('c64-emmy-v20-log',JSON.stringify(diagnosticLog));}catch(e){}
+  }
+  function say(text){status.textContent=text;logEvent('status',text);}
+  function setStage(text){startupStage=text;console.info('[C64 Emmy v20]',text);}
+  function reportError(kind,detail,extra){
+    const parts=['STARTUP ERROR ('+kind+')',detail||'No error message supplied','Stage: '+startupStage];
+    if(extra)parts.push(extra);
+    say(parts.join(' | '));console.error('[C64 Emmy v20]',parts.join(' | '));
+  }
+  function monitorScreen(){
+    const canvas=gameBox.querySelector('canvas');
+    const state=canvas?('canvas present '+canvas.width+'×'+canvas.height+'; CSS '+Math.round(canvas.getBoundingClientRect().width)+'×'+Math.round(canvas.getBoundingClientRect().height)):'no canvas in emulator area';
+    if(state!==lastCanvasState){canvasEvents++;lastCanvasState=state;console.info('[C64 Emmy v20] screen monitor:',state);}
+    diag.textContent='Screen monitor: '+state+' · changes '+canvasEvents+' · stage: '+startupStage;
+    logEvent('screen',state+'; changes='+canvasEvents);
+  }
+  new MutationObserver(monitorScreen).observe(gameBox,{childList:true,subtree:true});
+  window.addEventListener('resize',monitorScreen);
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden)monitorScreen();});
+  try{
+    const old=JSON.parse(sessionStorage.getItem('c64-emmy-v20-log')||'[]');
+    if(Array.isArray(old))diagnosticLog.push(...old.slice(-20));
+  }catch(e){}
+  window.addEventListener('error',e=>{
+    if(e.target && e.target!==window && (e.target.src||e.target.href)){
+      logEvent('resource-error',(e.target.tagName||'resource')+' '+(e.target.src||e.target.href));return;
+    }
+    const detail=e.message||(e.error&&(e.error.message||String(e.error)))||'Unknown browser error';
+    const where=(e.filename?('File: '+e.filename+'; '):'')+'line '+(e.lineno||'?')+', column '+(e.colno||'?');
+    const stack=e.error&&e.error.stack?('Stack: '+e.error.stack):'';
+    logEvent('browser-error',detail+' | '+where+' | '+stack);
+    reportError('browser',detail,[where,stack].filter(Boolean).join(' | '));
+  });
+  window.addEventListener('unhandledrejection',e=>{
+    let detail='Unknown rejected promise',stack='';
+    try{detail=e.reason&&(e.reason.message||String(e.reason))||detail;stack=e.reason&&e.reason.stack?('Stack: '+e.reason.stack):'';}catch(_){}
+    logEvent('promise-rejection',detail+' | '+stack);
+    reportError('promise rejection',detail,stack||'No stack was provided by the browser.');
+    if(e&&typeof e.preventDefault==='function')e.preventDefault();
+  });
+  gameBox.addEventListener('webglcontextlost',e=>{
+    diag.textContent='SCREEN DIAGNOSTIC: WebGL context lost; graphics may have crashed.';
+    reportError('graphics context lost','The emulator canvas reported a WebGL context loss.');
+  },true);
+  fileInput.addEventListener('change',()=>{
+    selectedFile=fileInput.files&&fileInput.files[0]||null;
+    if(!selectedFile){filename.textContent='No TAP selected yet';start.disabled=true;return;}
+    filename.textContent='Selected: '+selectedFile.name+' ('+Math.ceil(selectedFile.size/1024)+' KB)';
+    setStage('TAP selected: '+selectedFile.name);
+    if(!/\.tap$/i.test(selectedFile.name)){say('Please choose a .TAP file. Other formats are not supported.');start.disabled=true;}
+    else{say('TAP selected. Tap Load / Start.');start.disabled=false;}
+  });
+  function beep(freq=880,duration=.07,volume=.045){
+    try{
+      const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;
+      soundCtx=soundCtx||new AC();
+      if(soundCtx.state==='suspended'){
+        const result=soundCtx.resume();
+        if(result&&typeof result.catch==='function')result.catch(()=>{});
+      }
+      const osc=soundCtx.createOscillator(),gain=soundCtx.createGain();
+      osc.type='sine';osc.frequency.value=freq;gain.gain.setValueAtTime(volume,soundCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(.001,soundCtx.currentTime+duration-.005);
+      osc.connect(gain);gain.connect(soundCtx.destination);osc.start();osc.stop(soundCtx.currentTime+duration);
+    }catch(e){}
+  }
+  function startEmulator(){
+    if(!selectedFile){say('Choose a .TAP file first.');return;}
+    if(started){say('The emulator has already been started for this page. Use Reset page to choose another TAP.');return;}
+    started=true;start.disabled=true;reset.disabled=false;
+    if(monitorTimer)clearInterval(monitorTimer);
+    monitorScreen();monitorTimer=setInterval(monitorScreen,1000);
+    setStage('STEP 1/4: Preparing selected TAP');say('Preparing '+selectedFile.name+'…');
+    if(startupTimer)clearTimeout(startupTimer);
+    startupTimer=setTimeout(()=>{
+      if(started&&!status.textContent.startsWith('STARTUP ERROR'))
+        reportError('startup timeout','EmulatorJS did not report that it started within 45 seconds.');
+    },45000);
+    window.EJS_player='#game';
+    window.EJS_core='c64';
+    if(selectedObjectUrl){try{URL.revokeObjectURL(selectedObjectUrl);}catch(e){}}
+    try{selectedObjectUrl=URL.createObjectURL(selectedFile);}
+    catch(e){reportError('TAP file URL creation',e&&e.message?e.message:String(e),e&&e.stack?'Stack: '+e.stack:'');started=false;start.disabled=false;return;}
+    window.EJS_gameUrl=selectedObjectUrl;
+    window.EJS_gameName=selectedFile.name;
+    window.EJS_pathtodata='https://cdn.emulatorjs.org/stable/data/';
+    // Diagnostic test: let the engine load without forcing automatic game start.
+    window.EJS_startOnLoaded=false;
+    window.EJS_onGameStart=function(){
+      setStage('EmulatorJS reported game start');
+      if(startupTimer)clearTimeout(startupTimer);
+      say('EmulatorJS reported game start. Check whether the C64 screen displays output.');
+      monitorScreen();
+    };
+    window.EJS_onLoad=function(){
+      setStage('EmulatorJS engine loaded; waiting for manual game start');
+      say('EmulatorJS engine loaded. Waiting for manual start…');
+      monitorScreen();
+    };
+    if(!loaderAdded){
+      loaderAdded=true;
+      const s=document.createElement('script');
+      s.src='https://cdn.emulatorjs.org/stable/data/loader.js';
+      setStage('Downloading EmulatorJS loader script');
+      s.onload=()=>{
+        setStage('EmulatorJS loader script downloaded; engine startup pending');
+        if(status.textContent.includes('Preparing'))say('Loader downloaded. Waiting for EmulatorJS engine…');
+      };
+      s.onerror=()=>{
+        if(startupTimer)clearTimeout(startupTimer);
+        reportError('loader download','Could not download EmulatorJS loader script. Check the connection and reload.');
+        started=false;start.disabled=false;loaderAdded=false;
+      };
+      document.body.appendChild(s);
+    }
+    keys.classList.add('visible');showkeys.textContent='Hide keyboard';
+  }
+  window.addEventListener('online',()=>logEvent('network','online'));
+  window.addEventListener('offline',()=>logEvent('network','offline'));
+  document.getElementById('copydiag').addEventListener('click',async()=>{
+    const report={version:'C64 Emmy v20 manual-start test',time:new Date().toISOString(),stage:startupStage,status:status.textContent,screen:lastCanvasState,screenChanges:canvasEvents,selectedFile:selectedFile?{name:selectedFile.name,size:selectedFile.size}:null,events:diagnosticLog.slice(-35)};
+    const output=JSON.stringify(report,null,2);
+    try{await navigator.clipboard.writeText(output);say('Diagnostics copied. Paste them into this chat.');}
+    catch(e){
+      const ta=document.createElement('textarea');ta.value=output;ta.style.position='fixed';ta.style.inset='10px';ta.style.width='90%';ta.style.height='60%';ta.style.zIndex='99999';document.body.appendChild(ta);ta.focus();ta.select();
+      say('Clipboard unavailable: diagnostic text is selected. Touch and hold it, choose Copy, then paste into chat.');
+    }
+  });
+  start.addEventListener('click',startEmulator);
+  reset.addEventListener('click',()=>location.reload());
+  showkeys.addEventListener('click',()=>{
+    const visible=keys.classList.toggle('visible');showkeys.textContent=visible?'Hide keyboard':'Show keyboard';
+  });
+  const legacyCodes={Escape:27,Enter:13,Backspace:8,Shift:16,Control:17,Tab:9,ArrowLeft:37,ArrowUp:38,ArrowRight:39,ArrowDown:40,' ':32,F1:112,F3:114};
+  function dispatchKey(key,type){
+    const code=legacyCodes[key]||(key.length===1?key.toUpperCase().charCodeAt(0):0);
+    const keyCode=key===' '?32:code;
+    const opts={key:key,code:key===' '?'Space':(key.length===1?'Key'+key.toUpperCase():key),bubbles:true,cancelable:true,composed:true,repeat:false};
+    let ev;
+    try{ev=new KeyboardEvent(type,opts);}catch(e){ev=document.createEvent('Event');ev.initEvent(type,true,true);}
+    try{Object.defineProperty(ev,'keyCode',{get:()=>keyCode});Object.defineProperty(ev,'which',{get:()=>keyCode});}catch(e){}
+    [window,document,document.body,gameBox].forEach(t=>{try{t.dispatchEvent(ev);}catch(e){}});
+  }
+  document.querySelectorAll('[data-key]').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const key=btn.getAttribute('data-key');beep();dispatchKey(key,'keydown');
+      window.setTimeout(()=>dispatchKey(key,'keyup'),80);
+      say('Sent '+(key===' '?'SPACE':key.toUpperCase())+' key event.');
+    });
+  });
+})();
+</script>
+</body>
+</html>
